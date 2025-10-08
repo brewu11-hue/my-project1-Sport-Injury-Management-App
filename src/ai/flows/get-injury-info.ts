@@ -32,15 +32,11 @@ const prompt = ai.definePrompt({
   name: 'getInjuryInfoPrompt',
   input: {schema: GetInjuryInfoInputSchema},
   output: {schema: GetInjuryInfoOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest',
-  prompt: `You are an expert in sports medicine and physical therapy. Your goal is to provide clear, helpful, and safe information about sports injuries to athletes.
-
-Provide detailed information for the following injury: {{{injuryName}}}.
-
-- **Description**: Provide a clear, easy-to-understand description of what the injury is.
-- **Common Causes**: Explain the common ways this injury occurs in sports.
-- **General Treatment**: Offer general advice for initial management and recovery (e.g., R.I.C.E. principle, when to see a doctor, types of exercises that might help).
-- **Disclaimer**: Always include this exact disclaimer: "This information is for educational purposes only and is not a substitute for professional medical diagnosis or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition."
+  prompt: `You are an expert in sports medicine. For the injury named "{{injuryName}}", provide the following information:
+- A detailed description of what the injury is.
+- A list of common causes for the injury.
+- General treatment advice.
+- Finally, include this exact disclaimer: "This information is for educational purposes only and is not a substitute for professional medical diagnosis or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition."
 `,
 });
 
