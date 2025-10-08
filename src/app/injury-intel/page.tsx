@@ -72,12 +72,17 @@ function InjuryIntelContent() {
   const [state, formAction, isPending] = useActionState(searchInjuryInfo, initialState);
 
   useEffect(() => {
+    // When a query param is present, submit the form automatically on initial load.
+    // The user can then modify the search and resubmit manually.
     if (injuryQuery && !state.data && !state.error && !isPending) {
-        const formData = new FormData();
-        formData.append('injuryName', injuryQuery);
-        formAction(formData);
+        const form = document.getElementById('injury-intel-form') as HTMLFormElement;
+        if (form) {
+            form.requestSubmit();
+        }
     }
-  }, [injuryQuery, formAction, state.data, state.error, isPending]);
+    // We only want this to run once when the query param is available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -90,7 +95,7 @@ function InjuryIntelContent() {
         </CardHeader>
       </Card>
 
-      <form action={formAction}>
+      <form action={formAction} id="injury-intel-form">
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
@@ -115,6 +120,15 @@ function InjuryIntelContent() {
         </Card>
       </form>
       
+      {isPending && !state.data && (
+        <Card>
+            <CardContent className="pt-6 flex justify-center items-center">
+                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+                <span className="text-lg">Loading AI insights...</span>
+            </CardContent>
+        </Card>
+      )}
+
       {state.data && <InjuryInfoResult data={state.data} />}
 
     </div>
