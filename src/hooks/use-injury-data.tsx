@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { collection, addDoc, serverTimestamp, Timestamp, doc, query, orderBy, updateDoc, arrayUnion } from 'firebase/firestore';
-import { useAuth, useCollection, useFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 
 export type Treatment = {
   id: string;
@@ -17,7 +17,7 @@ export type Injury = {
   severity: number; // 1-10
   date: Date;
   treatments?: Treatment[];
-  recoveryHistory?: { date: Date | Timestamp; severity: number }[];
+  recoveryHistory?: { date: Date; severity: number }[];
   createdAt: Timestamp;
   userId: string;
 };
@@ -42,7 +42,12 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
     return query(collection(firestore, 'users', user.uid, 'injuries'), orderBy('date', 'desc'));
   }, [firestore, user?.uid]);
 
-  const { data: injuries, loading } = useCollection<Injury>(injuriesQuery);
+  const { data: injuriesData, loading: injuriesLoading } = useCollection<Injury>(injuriesQuery);
+
+  // This is the critical fix: Ensure `injuries` is always an array.
+  const injuries = useMemo(() => injuriesData || [], [injuriesData]);
+  const loading = injuriesLoading && !injuriesData;
+
 
   const addInjury = useCallback(async (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => {
     if (!firestore || !user?.uid) throw new Error("User or Firestore not available");

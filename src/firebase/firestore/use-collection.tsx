@@ -39,7 +39,7 @@ function useCollection<T extends DocumentData>(
   options: UseCollectionOptions = { listen: true }
 ) {
   const { user, loading: userLoading } = useUser();
-  const [data, setData] = useState<T[]>([]);
+  const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
