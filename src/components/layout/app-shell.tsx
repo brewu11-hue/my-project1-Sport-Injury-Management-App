@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HeartPulse, ShieldAlert, Dumbbell, Scan, Info } from 'lucide-react';
+import { Dumbbell } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -14,8 +14,21 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase/auth/use-user';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { signOut } from '@/firebase/auth/sign-out';
+import { Skeleton } from '../ui/skeleton';
 
 type AppShellProps = {
   children: ReactNode;
@@ -37,11 +50,59 @@ const menuItems = [
   {
     href: '/injury-intel',
     label: 'Injury Intel',
-  }
+  },
 ];
+
+function UserMenu() {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
+
+  if (!user) {
+    return (
+      <Button asChild variant="outline" size="sm">
+        <Link href="/login">Sign In</Link>
+      </Button>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+            <AvatarFallback>{user.displayName?.[0]}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user.displayName}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut()}>
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+
+  if (pathname === '/login') {
+    return <>{children}</>;
+  }
 
   return (
     <SidebarProvider>
@@ -81,6 +142,11 @@ export default function AppShell({ children }: AppShellProps) {
             ))}
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter>
+          <div className='p-2'>
+            <UserMenu />
+          </div>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-background/80 px-6 sticky top-0 z-30 md:hidden backdrop-blur-sm">
@@ -90,6 +156,9 @@ export default function AppShell({ children }: AppShellProps) {
             <h1 className="text-lg font-semibold tracking-tight">
               Injury Insights
             </h1>
+          </div>
+          <div className="ml-auto">
+            <UserMenu />
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
