@@ -25,22 +25,18 @@ const menuItems = [
   {
     href: '/dashboard',
     label: 'Dashboard',
-    icon: HeartPulse,
   },
   {
     href: '/risk-assessment',
     label: 'Risk Assessment',
-    icon: ShieldAlert,
   },
   {
     href: '/injury-scan',
     label: 'Injury Scan',
-    icon: Scan,
   },
   {
     href: '/injury-intel',
     label: 'Injury Intel',
-    icon: Info,
   }
 ];
 
@@ -78,7 +74,6 @@ export default function AppShell({ children }: AppShellProps) {
                   tooltip={item.label}
                 >
                   <Link href={item.href}>
-                    <item.icon />
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
