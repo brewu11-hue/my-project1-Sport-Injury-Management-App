@@ -44,10 +44,6 @@ export function initializeFirebase(): FirebaseContextValue {
   const firestore = getFirestore(app);
   const auth = getAuth(app);
 
-  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
-    startEmulators(firestore, auth);
-  }
-
   return { app, firestore, auth };
 }
 
@@ -58,6 +54,12 @@ export function FirebaseProvider({
   children: ReactNode;
   value: FirebaseContextValue;
 }) {
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
+      startEmulators(value.firestore, value.auth);
+    }
+  }, [value]);
+
   return (
     <FirebaseContext.Provider value={value}>
       {children}
