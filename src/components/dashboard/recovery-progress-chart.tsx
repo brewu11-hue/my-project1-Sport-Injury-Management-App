@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Injury } from '@/hooks/use-injury-data';
@@ -19,7 +20,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
         date: historyDate,
         severity: h.severity
       }
-    }) || []
+    }) ?? [] // Use ?? [] to handle undefined recoveryHistory
   );
 
   const dates = [...new Set(allHistory.map(h => h.date.toISOString().split('T')[0]))].sort();
@@ -27,6 +28,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
   const chartData = dates.map(dateStr => {
     const record: { [key: string]: any } = { date: new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
     injuries.forEach(injury => {
+      // Add a check for recoveryHistory before trying to map over it
       if (!injury.recoveryHistory) return;
 
       const historyForDate = injury.recoveryHistory
@@ -49,7 +51,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
     return config;
   }, {} as ChartConfig);
 
-  if (injuries.length === 0) {
+  if (injuries.length === 0 || chartData.length === 0) {
     return (
       <div className="flex h-[300px] w-full items-center justify-center text-muted-foreground">
         Log an injury to see your recovery progress.
