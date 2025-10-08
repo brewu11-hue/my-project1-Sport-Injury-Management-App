@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname, redirect } from 'next/navigation';
+import { usePathname, redirect, useRouter } from 'next/navigation';
 import { Dumbbell } from 'lucide-react';
 import {
   SidebarProvider,
@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { signOut } from '@/firebase/auth/sign-out';
 import { Skeleton } from '../ui/skeleton';
+import { useEffect } from 'react';
 
 type AppShellProps = {
   children: ReactNode;
@@ -100,6 +101,17 @@ function UserMenu() {
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+        const intendedUrl = sessionStorage.getItem('firebase-redirect-url');
+        if (intendedUrl) {
+            sessionStorage.removeItem('firebase-redirect-url');
+            router.replace(intendedUrl);
+        }
+    }
+  }, [user, loading, router])
 
   if (pathname === '/login') {
     return <>{children}</>;

@@ -5,6 +5,7 @@ import type {
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
+  Timestamp,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { useUser } from '@/firebase';
@@ -14,6 +15,26 @@ interface UseDocOptions {
 }
 
 const useMemoFirebase = (creator, deps) => useMemo(creator, deps);
+
+// Function to recursively convert Timestamps to Dates
+const convertTimestampsToDates = (data: any): any => {
+    if (data instanceof Timestamp) {
+        return data.toDate();
+    }
+    if (Array.isArray(data)) {
+        return data.map(item => convertTimestampsToDates(item));
+    }
+    if (data !== null && typeof data === 'object') {
+        const newData: { [key: string]: any } = {};
+        for (const key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                newData[key] = convertTimestampsToDates(data[key]);
+            }
+        }
+        return newData;
+    }
+    return data;
+};
 
 
 function useDoc<T extends DocumentData>(
@@ -28,12 +49,16 @@ function useDoc<T extends DocumentData>(
   const memoizedRef = useMemoFirebase(() => ref, [JSON.stringify(ref)]);
 
   useEffect(() => {
+    // Wait until user's auth state is confirmed
     if (userLoading) {
         setLoading(true);
         return;
     }
+    
+    // If no user is logged in, or ref is null, stop.
     if (!memoizedRef || !user) {
       setLoading(false);
+      setData(null);
       return;
     }
 
@@ -43,7 +68,9 @@ function useDoc<T extends DocumentData>(
       memoizedRef,
       (snapshot: DocumentSnapshot<T>) => {
         if (snapshot.exists()) {
-          setData({ id: snapshot.id, ...snapshot.data() } as T);
+          const docData = snapshot.data();
+          const dataWithDates = convertTimestampsToDates(docData);
+          setData({ id: snapshot.id, ...dataWithDates } as T);
         } else {
           setData(null);
         }

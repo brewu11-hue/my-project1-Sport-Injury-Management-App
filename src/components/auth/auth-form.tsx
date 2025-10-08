@@ -36,9 +36,10 @@ function GoogleIcon() {
 
 export default function AuthForm() {
     const searchParams = useSearchParams();
-    const next = searchParams.get('next') ?? '/';
+    const next = searchParams.get('next') ?? '/dashboard';
   
     const handleGoogleSignIn = async () => {
+      // This is now a client-side function
       await signInWithGoogle(next);
     };
   

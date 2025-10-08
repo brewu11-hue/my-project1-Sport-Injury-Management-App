@@ -49,13 +49,16 @@ function useCollection<T extends DocumentData>(
   const memoizedQuery = useMemoFirebase(() => query, [JSON.stringify(query)]);
 
   useEffect(() => {
+    // Wait until user's auth state is confirmed
     if (userLoading) {
       setLoading(true);
       return;
     }
+    
+    // If no user is logged in, or query is null, stop loading and return empty array.
     if (!memoizedQuery || !user) {
-        setLoading(false);
         setData([]);
+        setLoading(false);
         return;
     }
 

@@ -1,12 +1,29 @@
-'use server';
+'use client';
 
-import { createSignInUrl } from '@/firebase/auth/integrations/google';
-import { redirect } from 'next/navigation';
+import {
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getAuth,
+} from 'firebase/auth';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { firebaseConfig } from '@/firebase/config';
+
+function getClientApp() {
+  if (getApps().length) {
+    return getApp();
+  }
+  return initializeApp(firebaseConfig);
+}
 
 export async function signInWithGoogle(redirectTo?: string) {
-  const { url, providerId, flow } = await createSignInUrl(redirectTo);
+  const app = getClientApp();
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-  if (url) {
-    redirect(url);
+  // Store the redirect URL in session storage to be retrieved after sign-in
+  if (redirectTo) {
+    sessionStorage.setItem('firebase-redirect-url', redirectTo);
   }
+
+  await signInWithRedirect(auth, provider);
 }
