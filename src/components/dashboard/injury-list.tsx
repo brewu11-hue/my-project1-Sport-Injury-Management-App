@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useInjuryData } from '@/hooks/use-injury-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AddInjuryDialog } from './add-injury-dialog';
+import { Input } from '../ui/input';
 
 type InjuryListProps = {
   selectedInjuryId: string | null;
@@ -16,22 +18,40 @@ type InjuryListProps = {
 
 export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryListProps) {
   const { injuries } = useInjuryData();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredInjuries = injuries.filter((injury) =>
+    injury.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Injury Log</CardTitle>
-        <AddInjuryDialog>
-          <Button size="sm" variant="ghost" className="gap-1">
-            <PlusCircle className="h-4 w-4" />
-            Add Injury
-          </Button>
-        </AddInjuryDialog>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Injury Log</CardTitle>
+          <AddInjuryDialog>
+            <Button size="sm" variant="ghost" className="gap-1">
+              <PlusCircle className="h-4 w-4" />
+              Add Injury
+            </Button>
+          </AddInjuryDialog>
+        </div>
+        <div className="relative mt-2">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search for an injury..."
+            className="pl-8 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-22rem)]">
+        <ScrollArea className="h-[calc(100vh-25rem)]">
           <div className="flex flex-col gap-2 p-4 pt-0">
-            {injuries.map((injury) => (
+            {filteredInjuries.length > 0 ? (
+              filteredInjuries.map((injury) => (
               <button
                 key={injury.id}
                 className={cn(
@@ -59,7 +79,12 @@ export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryL
                   </div>
                 </div>
               </button>
-            ))}
+            ))
+            ) : (
+              <div className="text-center text-muted-foreground p-8">
+                No injuries found.
+              </div>
+            )}
           </div>
         </ScrollArea>
       </CardContent>
