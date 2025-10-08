@@ -12,6 +12,14 @@ type RecoveryProgressChartProps = {
 
 export default function RecoveryProgressChart({ injuries }: RecoveryProgressChartProps) {
   
+  if (!injuries || injuries.length === 0) {
+    return (
+      <div className="flex h-[300px] w-full items-center justify-center text-muted-foreground">
+        Log an injury to see your recovery progress.
+      </div>
+    );
+  }
+
   const allHistory = injuries.flatMap(injury => 
     injury.recoveryHistory?.map(h => {
       const historyDate = h.date instanceof Timestamp ? h.date.toDate() : h.date;
@@ -20,15 +28,22 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
         date: historyDate,
         severity: h.severity
       }
-    }) ?? [] // Use ?? [] to handle undefined recoveryHistory
+    }) ?? []
   );
+
+  if (allHistory.length === 0) {
+    return (
+      <div className="flex h-[300px] w-full items-center justify-center text-muted-foreground">
+        No recovery history yet. Update an injury's severity to see progress.
+      </div>
+    );
+  }
 
   const dates = [...new Set(allHistory.map(h => h.date.toISOString().split('T')[0]))].sort();
   
   const chartData = dates.map(dateStr => {
     const record: { [key: string]: any } = { date: new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
     injuries.forEach(injury => {
-      // Add a check for recoveryHistory before trying to map over it
       if (!injury.recoveryHistory) return;
 
       const historyForDate = injury.recoveryHistory
@@ -50,14 +65,6 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
     };
     return config;
   }, {} as ChartConfig);
-
-  if (injuries.length === 0 || chartData.length === 0) {
-    return (
-      <div className="flex h-[300px] w-full items-center justify-center text-muted-foreground">
-        Log an injury to see your recovery progress.
-      </div>
-    );
-  }
 
   return (
     <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -86,7 +93,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
             stroke={`hsl(var(--chart-${(index % 2) + 1}))`}
             strokeWidth={2}
             dot={false}
-            connectNulls // This will connect points across null values
+            connectNulls
           />
         ))}
       </LineChart>
