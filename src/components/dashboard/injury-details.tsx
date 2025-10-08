@@ -28,6 +28,7 @@ export default function InjuryDetails({ injury }: InjuryDetailsProps) {
     );
   }
   
+  // Safely handle both Timestamp and Date objects
   const injuryDate = injury.date instanceof Timestamp ? injury.date.toDate() : injury.date;
 
   return (
