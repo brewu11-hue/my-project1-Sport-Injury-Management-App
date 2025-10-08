@@ -24,20 +24,20 @@ export type GetInjuryInfoOutput = {
 
 export async function getInjuryInfo(input: GetInjuryInfoInput): Promise<GetInjuryInfoOutput> {
   const llmResponse = await ai.generate({
-    prompt: `Provide a detailed description, common causes, and general treatment for the sports injury: "${input.injuryName}".
-    Use the following format, separating sections with ':::' :
-    Description::: [Provide a detailed description of the injury]
-    Common Causes::: [List the common causes of the injury]
-    General Treatment::: [Provide general treatment advice]`,
+    prompt: `For the sports injury "${input.injuryName}", provide the following information, with each section separated by ':::':
+1. A detailed description.
+2. A list of common causes.
+3. General treatment advice.
+`,
     model: 'gemini-1.5-flash-latest',
   });
 
   const text = llmResponse.text();
   const parts = text.split(':::');
   
-  const description = parts[1]?.replace('Common Causes', '').trim() || 'No description available.';
-  const commonCauses = parts[2]?.replace('General Treatment', '').trim() || 'No common causes available.';
-  const generalTreatment = parts[3]?.trim() || 'No treatment advice available.';
+  const description = parts[0]?.trim() || 'No description available.';
+  const commonCauses = parts[1]?.trim() || 'No common causes available.';
+  const generalTreatment = parts[2]?.trim() || 'No treatment advice available.';
 
   return {
     description,
