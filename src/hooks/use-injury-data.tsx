@@ -38,13 +38,13 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
 
   const injuriesQuery = useMemo(() => {
-    // This now safely returns a query object, assuming firestore and user are available.
-    // The check for user existence is moved to the useCollection hook.
     if (!firestore || !user?.uid) return null;
     return query(collection(firestore, 'users', user.uid, 'injuries'), orderBy('date', 'desc'));
   }, [firestore, user?.uid]);
 
-  const { data: injuries, loading } = useCollection<Injury>(injuriesQuery);
+  const { data, loading } = useCollection<Injury>(injuriesQuery);
+
+  const injuries = data ?? [];
 
   const addInjury = useCallback(async (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => {
     if (!firestore || !user?.uid) throw new Error("User or Firestore not available");

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type {
   Query,
   DocumentData,
@@ -39,12 +39,12 @@ function useCollection<T extends DocumentData>(
   options: UseCollectionOptions = { listen: true }
 ) {
   const { user, loading: userLoading } = useUser();
-  const [data, setData] = useState<T[]>([]);
+  const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
-    // Wait until user's auth state is confirmed
+    // Wait until user's auth state is confirmed before doing anything
     if (userLoading) {
       setLoading(true);
       return;
@@ -81,6 +81,8 @@ function useCollection<T extends DocumentData>(
     );
 
     return () => unsubscribe();
+  // We only want to re-run this effect if the query or user credentials change.
+  // The query object itself should be memoized in the component calling this hook.
   }, [query, user, userLoading]);
 
   return { data, loading, error };

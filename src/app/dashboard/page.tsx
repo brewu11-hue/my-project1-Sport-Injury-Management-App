@@ -1,20 +1,24 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { InjuryDataProvider, useInjuryData, Injury } from '@/hooks/use-injury-data';
+import { InjuryDataProvider, useInjuryData } from '@/hooks/use-injury-data';
 import InjuryList from '@/components/dashboard/injury-list';
 import InjuryDetails from '@/components/dashboard/injury-details';
 import RecoveryProgressChart from '@/components/dashboard/recovery-progress-chart';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 
 function DashboardContent() {
-  const { injuries } = useInjuryData();
+  const { injuries, loading } = useInjuryData();
   const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>(null);
 
   const selectedInjury = useMemo(() => {
+    // On initial load for a new user, automatically select the most recent injury once it's available.
+    if (!selectedInjuryId && !loading && injuries.length > 0) {
+      setSelectedInjuryId(injuries[0].id);
+    }
     if (!selectedInjuryId) return null;
     return injuries.find((i) => i.id === selectedInjuryId) || null;
-  }, [injuries, selectedInjuryId]);
+  }, [injuries, selectedInjuryId, loading]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
