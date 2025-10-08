@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HeartPulse, ShieldAlert, Dumbbell } from 'lucide-react';
+import { HeartPulse, ShieldAlert, Dumbbell, Scan } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -32,6 +32,11 @@ const menuItems = [
     label: 'Risk Assessment',
     icon: ShieldAlert,
   },
+  {
+    href: '/injury-scan',
+    label: 'Injury Scan',
+    icon: Scan,
+  }
 ];
 
 export default function AppShell({ children }: AppShellProps) {
