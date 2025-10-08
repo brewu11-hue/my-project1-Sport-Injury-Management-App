@@ -9,12 +9,18 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { GetInjuryInfoOutput } from '@/app/injury-intel/actions';
 
 const GetInjuryInfoInputSchema = z.object({
   injuryName: z.string().describe('The name of the sports injury to look up.'),
 });
 export type GetInjuryInfoInput = z.infer<typeof GetInjuryInfoInputSchema>;
+
+export type GetInjuryInfoOutput = {
+    description: string;
+    commonCauses: string;
+    generalTreatment: string;
+    disclaimer: string;
+};
 
 export async function getInjuryInfo(input: GetInjuryInfoInput): Promise<GetInjuryInfoOutput> {
   const llmResponse = await ai.generate({

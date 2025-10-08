@@ -1,20 +1,11 @@
 'use server';
 
-import { getInjuryInfo, GetInjuryInfoInput } from '@/ai/flows/get-injury-info';
+import { getInjuryInfo, GetInjuryInfoInput, type GetInjuryInfoOutput } from '@/ai/flows/get-injury-info';
 import { z } from 'zod';
 
 const GetInjuryInfoActionSchema = z.object({
     injuryName: z.string().min(2, 'Please enter a valid injury name.'),
 });
-
-export const GetInjuryInfoOutputSchema = z.object({
-    description: z.string(),
-    commonCauses: z.string(),
-    generalTreatment: z.string(),
-    disclaimer: z.string(),
-});
-export type GetInjuryInfoOutput = z.infer<typeof GetInjuryInfoOutputSchema>;
-
 
 export type SearchState = {
     data: GetInjuryInfoOutput | null;
