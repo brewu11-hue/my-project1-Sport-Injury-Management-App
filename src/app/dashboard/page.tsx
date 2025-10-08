@@ -1,11 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { InjuryDataProvider, useInjuryData } from '@/hooks/use-injury-data';
 import InjuryList from '@/components/dashboard/injury-list';
 import InjuryDetails from '@/components/dashboard/injury-details';
-import RecoveryProgressChart from '@/components/dashboard/recovery-progress-chart';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const RecoveryProgressChart = dynamic(
+  () => import('@/components/dashboard/recovery-progress-chart'),
+  { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[300px] w-full" />,
+  }
+);
 
 function DashboardContent() {
   const { injuries, loading } = useInjuryData();

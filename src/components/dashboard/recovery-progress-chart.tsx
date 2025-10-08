@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Injury } from '@/hooks/use-injury-data';
@@ -55,7 +54,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
   const injuryTypes = injuries.map(i => i.type);
   for (let i = 1; i < chartData.length; i++) {
     for (const type of injuryTypes) {
-        if (chartData[i][type] === undefined) {
+        if (chartData[i][type] === undefined && chartData[i-1]) {
             chartData[i][type] = chartData[i - 1][type];
         }
     }
