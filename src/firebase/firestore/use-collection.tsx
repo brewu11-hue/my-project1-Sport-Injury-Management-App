@@ -39,11 +39,22 @@ function useCollection<T extends DocumentData>(
   options: UseCollectionOptions = { listen: true }
 ) {
   const { user, loading: userLoading } = useUser();
-  const [data, setData] = useState<T[] | null>(null);
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client, ensuring `isClient` is true on the client-side.
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Only run this logic on the client
+    if (!isClient) {
+      return;
+    }
+
     // Wait until user's auth state is confirmed before doing anything
     if (userLoading) {
       setLoading(true);
@@ -81,9 +92,8 @@ function useCollection<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  // We only want to re-run this effect if the query or user credentials change.
-  // The query object itself should be memoized in the component calling this hook.
-  }, [query, user, userLoading]);
+  // We only want to re-run this effect if the query, user, loading status, or client status changes.
+  }, [query, user, userLoading, isClient]);
 
   return { data, loading, error };
 }
