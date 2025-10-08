@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HeartPulse, ShieldAlert, Dumbbell, Scan } from 'lucide-react';
+import { HeartPulse, ShieldAlert, Dumbbell, Scan, Info } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -36,6 +36,11 @@ const menuItems = [
     href: '/injury-scan',
     label: 'Injury Scan',
     icon: Scan,
+  },
+  {
+    href: '/injury-intel',
+    label: 'Injury Intel',
+    icon: Info,
   }
 ];
 

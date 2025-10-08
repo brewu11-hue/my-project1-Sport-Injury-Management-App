@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { Injury } from '@/hooks/use-injury-data';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { format } from 'date-fns';
 import TreatmentLog from './treatment-log';
-import { Activity } from 'lucide-react';
+import { Activity, Info } from 'lucide-react';
+import { Button } from '../ui/button';
 
 type InjuryDetailsProps = {
   injury: Injury | null;
@@ -41,6 +43,14 @@ export default function InjuryDetails({ injury }: InjuryDetailsProps) {
         </div>
         <TreatmentLog injury={injury} />
       </CardContent>
+      <CardFooter>
+          <Button asChild variant="outline">
+              <Link href={`/injury-intel?injury=${encodeURIComponent(injury.type)}`}>
+                  <Info className="mr-2"/>
+                  Get AI Insights on {injury.type}
+              </Link>
+          </Button>
+      </CardFooter>
     </Card>
   );
 }
