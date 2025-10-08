@@ -28,7 +28,7 @@ const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 const EMULATORS_STARTED = 'EMULATORS_STARTED';
 function startEmulators(firestore: Firestore, auth: Auth) {
   // @ts-ignore
-  if (!window[EMULATORS_STARTED]) {
+  if (typeof window !== 'undefined' && !window[EMULATORS_STARTED]) {
     // @ts-ignore
     window[EMULATORS_STARTED] = true;
     connectFirestoreEmulator(firestore, 'localhost', 8080);
