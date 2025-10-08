@@ -16,7 +16,7 @@ const GetInjuryInfoInputSchema = z.object({
 });
 export type GetInjuryInfoInput = z.infer<typeof GetInjuryInfoInputSchema>;
 
-const GetInjuryInfoOutputSchema = z.object({
+export const GetInjuryInfoOutputSchema = z.object({
   description: z.string().describe('A detailed description of the injury.'),
   commonCauses: z.string().describe('Common causes or mechanisms of the injury.'),
   generalTreatment: z.string().describe('General advice on treatment and recovery. This can include R.I.C.E., stretching, strengthening exercises, etc.'),
@@ -24,30 +24,28 @@ const GetInjuryInfoOutputSchema = z.object({
 });
 export type GetInjuryInfoOutput = z.infer<typeof GetInjuryInfoOutputSchema>;
 
+
 export async function getInjuryInfo(input: GetInjuryInfoInput): Promise<GetInjuryInfoOutput> {
-  return getInjuryInfoFlow(input);
+  const llmResponse = await ai.generate({
+    prompt: `Provide a detailed description, common causes, and general treatment for the sports injury: "${input.injuryName}".
+    Use the following format, separating sections with ':::' :
+    Description::: [Provide a detailed description of the injury]
+    Common Causes::: [List the common causes of the injury]
+    General Treatment::: [Provide general treatment advice]`,
+    model: 'gemini-1.5-flash-latest',
+  });
+
+  const text = llmResponse.text();
+  const parts = text.split(':::');
+  
+  const description = parts[1]?.replace('Common Causes', '').trim() || 'No description available.';
+  const commonCauses = parts[2]?.replace('General Treatment', '').trim() || 'No common causes available.';
+  const generalTreatment = parts[3]?.trim() || 'No treatment advice available.';
+
+  return {
+    description,
+    commonCauses,
+    generalTreatment,
+    disclaimer: "This information is for educational purposes only and is not a substitute for professional medical diagnosis or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition."
+  };
 }
-
-const prompt = ai.definePrompt({
-  name: 'getInjuryInfoPrompt',
-  input: {schema: GetInjuryInfoInputSchema},
-  output: {schema: GetInjuryInfoOutputSchema},
-  prompt: `You are an expert in sports medicine. For the injury named "{{injuryName}}", provide the following information:
-- A detailed description of what the injury is.
-- A list of common causes for the injury.
-- General treatment advice.
-- Finally, include this exact disclaimer: "This information is for educational purposes only and is not a substitute for professional medical diagnosis or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition."
-`,
-});
-
-const getInjuryInfoFlow = ai.defineFlow(
-  {
-    name: 'getInjuryInfoFlow',
-    inputSchema: GetInjuryInfoInputSchema,
-    outputSchema: GetInjuryInfoOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
