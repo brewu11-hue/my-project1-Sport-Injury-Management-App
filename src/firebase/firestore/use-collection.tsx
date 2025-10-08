@@ -39,7 +39,7 @@ function useCollection<T extends DocumentData>(
   options: UseCollectionOptions = { listen: true }
 ) {
   const { user, loading: userLoading } = useUser();
-  const [data, setData] = useState<T[] | null>(null);
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
@@ -83,7 +83,7 @@ function useCollection<T extends DocumentData>(
     return () => unsubscribe();
   }, [query, user, userLoading]);
 
-  return { data: data ?? [], loading, error };
+  return { data, loading, error };
 }
 
 export { useCollection };

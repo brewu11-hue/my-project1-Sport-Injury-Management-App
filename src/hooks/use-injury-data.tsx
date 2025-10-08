@@ -42,7 +42,7 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
     return query(collection(firestore, 'users', user.uid, 'injuries'), orderBy('date', 'desc'));
   }, [firestore, user?.uid]);
 
-  const { data: injuries = [], loading } = useCollection<Injury>(injuriesQuery);
+  const { data: injuries, loading } = useCollection<Injury>(injuriesQuery);
 
   const addInjury = useCallback(async (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => {
     if (!firestore || !user?.uid) throw new Error("User or Firestore not available");
