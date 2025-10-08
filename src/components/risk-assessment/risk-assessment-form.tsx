@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 import { runInjuryRiskAssessment, RiskAssessmentState } from '@/app/risk-assessment/actions';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -8,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useEffect } from 'react';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -35,7 +35,7 @@ export default function RiskAssessmentForm({ setAssessmentResult }: RiskAssessme
     data: null,
     input: { athleteProfile: '', trainingLoad: '', pastInjuries: '' },
   };
-  const [state, formAction] = useFormState(runInjuryRiskAssessment, initialState);
+  const [state, formAction] = useActionState(runInjuryRiskAssessment, initialState);
   
   useEffect(() => {
     if(state.data || state.error) {
