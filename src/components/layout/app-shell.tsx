@@ -122,7 +122,9 @@ export default function AppShell({ children }: AppShellProps) {
   if (pathname === '/login') {
     return <>{children}</>;
   }
-
+  
+  // The FirebaseClientProvider now renders null initially, so the loading spinner
+  // needs to be handled here, before we attempt to check for the user.
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen">

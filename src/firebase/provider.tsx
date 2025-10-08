@@ -31,10 +31,15 @@ function startEmulators(firestore: Firestore, auth: Auth) {
     // @ts-ignore
     window[EMULATORS_STARTED] = true;
     try {
-      connectFirestoreEmulator(firestore, 'localhost', 8080);
-      connectAuthEmulator(auth, 'http://localhost:9099', {
-        disableWarnings: true,
-      });
+      // Note: It's important to check process.env here as this code
+      // will be bundled for the client.
+      if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
+        connectFirestoreEmulator(firestore, 'localhost', 8080);
+        connectAuthEmulator(auth, 'http://localhost:9099', {
+          disableWarnings: true,
+        });
+        console.log("Connected to Firebase Emulators.");
+      }
     } catch (e) {
       console.error("Error connecting to emulators. Make sure they are running.", e);
     }
@@ -45,6 +50,9 @@ export function initializeFirebase(): FirebaseContextValue {
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const firestore = getFirestore(app);
   const auth = getAuth(app);
+  
+  startEmulators(firestore, auth);
+  
   return { app, firestore, auth };
 }
 
@@ -55,12 +63,6 @@ export function FirebaseProvider({
   children: ReactNode;
   value: FirebaseContextValue;
 }) {
-  useEffect(() => {
-    if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
-      startEmulators(value.firestore, value.auth);
-    }
-  }, [value]);
-
   return (
     <FirebaseContext.Provider value={value}>
       {children}
@@ -72,6 +74,20 @@ export const useFirebase = () => useContext(FirebaseContext);
 
 export const useFirebaseApp = () => useContext(FirebaseContext)?.app;
 
-export const useFirestore = () => useContext(FirebaseContext)?.firestore;
+export const useFirestore = () => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        // This can happen during the initial client render before the provider is ready.
+        return undefined;
+    }
+    return context.firestore;
+};
 
-export const useAuth = () => useContext(FirebaseContext)?.auth;
+export const useAuth = () => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        // This can happen during the initial client render before the provider is ready.
+        return undefined;
+    }
+    return context.auth;
+};
