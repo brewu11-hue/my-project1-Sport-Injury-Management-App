@@ -20,7 +20,7 @@ function useDoc<T extends DocumentData>(
   ref: DocumentReference<T> | null,
   options: UseDocOptions = { listen: true }
 ) {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
@@ -28,6 +28,10 @@ function useDoc<T extends DocumentData>(
   const memoizedRef = useMemoFirebase(() => ref, [JSON.stringify(ref)]);
 
   useEffect(() => {
+    if (userLoading) {
+        setLoading(true);
+        return;
+    }
     if (!memoizedRef || !user) {
       setLoading(false);
       return;
@@ -53,7 +57,7 @@ function useDoc<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedRef, user]);
+  }, [memoizedRef, user, userLoading]);
 
   return { data, loading, error };
 }

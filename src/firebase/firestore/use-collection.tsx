@@ -19,7 +19,7 @@ function useCollection<T extends DocumentData>(
   query: Query<T> | null,
   options: UseCollectionOptions = { listen: true }
 ) {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
@@ -27,6 +27,10 @@ function useCollection<T extends DocumentData>(
   const memoizedQuery = useMemoFirebase(() => query, [JSON.stringify(query)]);
 
   useEffect(() => {
+    if (userLoading) {
+      setLoading(true);
+      return;
+    }
     if (!memoizedQuery || !user) {
         setLoading(false);
         setData([]);
@@ -53,7 +57,7 @@ function useCollection<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedQuery, user]);
+  }, [memoizedQuery, user, userLoading]);
 
   return { data, loading, error };
 }
