@@ -5,25 +5,16 @@
  *
  * - getInjuryInfo - A function that returns information about a given injury.
  * - GetInjuryInfoInput - The input type for the getInjuryInfo function.
- * - GetInjuryInfoOutput - The return type for the getInjuryInfo function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import type { GetInjuryInfoOutput } from '@/app/injury-intel/actions';
 
 const GetInjuryInfoInputSchema = z.object({
   injuryName: z.string().describe('The name of the sports injury to look up.'),
 });
 export type GetInjuryInfoInput = z.infer<typeof GetInjuryInfoInputSchema>;
-
-export const GetInjuryInfoOutputSchema = z.object({
-  description: z.string().describe('A detailed description of the injury.'),
-  commonCauses: z.string().describe('Common causes or mechanisms of the injury.'),
-  generalTreatment: z.string().describe('General advice on treatment and recovery. This can include R.I.C.E., stretching, strengthening exercises, etc.'),
-  disclaimer: z.string().describe('A standard disclaimer that this information is not a substitute for professional medical advice.'),
-});
-export type GetInjuryInfoOutput = z.infer<typeof GetInjuryInfoOutputSchema>;
-
 
 export async function getInjuryInfo(input: GetInjuryInfoInput): Promise<GetInjuryInfoOutput> {
   const llmResponse = await ai.generate({

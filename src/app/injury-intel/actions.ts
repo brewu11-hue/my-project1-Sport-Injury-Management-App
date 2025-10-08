@@ -1,11 +1,20 @@
 'use server';
 
-import { getInjuryInfo, GetInjuryInfoInput, GetInjuryInfoOutput } from '@/ai/flows/get-injury-info';
+import { getInjuryInfo, GetInjuryInfoInput } from '@/ai/flows/get-injury-info';
 import { z } from 'zod';
 
-const GetInjuryInfoSchema = z.object({
+const GetInjuryInfoActionSchema = z.object({
     injuryName: z.string().min(2, 'Please enter a valid injury name.'),
 });
+
+export const GetInjuryInfoOutputSchema = z.object({
+    description: z.string(),
+    commonCauses: z.string(),
+    generalTreatment: z.string(),
+    disclaimer: z.string(),
+});
+export type GetInjuryInfoOutput = z.infer<typeof GetInjuryInfoOutputSchema>;
+
 
 export type SearchState = {
     data: GetInjuryInfoOutput | null;
@@ -24,7 +33,7 @@ export async function searchInjuryInfo(prevState: SearchState, formData: FormDat
         input: rawFormData,
     };
 
-    const validatedFields = GetInjuryInfoSchema.safeParse(rawFormData);
+    const validatedFields = GetInjuryInfoActionSchema.safeParse(rawFormData);
     if (!validatedFields.success) {
         newState.error = validatedFields.error.flatten().fieldErrors.injuryName?.[0] || 'Invalid input.';
         return newState;
