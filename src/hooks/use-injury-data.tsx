@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { collection, addDoc, serverTimestamp, Timestamp, doc, query, orderBy } from 'firebase/firestore';
+import { useAuth, useCollection, useFirestore, useUser } from '@/firebase';
 
 export type Treatment = {
   id: string;
@@ -10,104 +12,79 @@ export type Treatment = {
 };
 
 export type Injury = {
-  id: string;
+  id:string;
   type: string;
   severity: number; // 1-10
   date: Date;
-  treatments: Treatment[];
-  recoveryHistory: { date: Date; severity: number }[];
+  treatments?: Treatment[];
+  recoveryHistory?: { date: Date; severity: number }[];
+  createdAt: Timestamp;
+  userId: string;
 };
 
 type InjuryDataContextType = {
   injuries: Injury[];
-  addInjury: (injury: Omit<Injury, 'id' | 'treatments' | 'recoveryHistory'>) => void;
-  addTreatment: (injuryId: string, treatment: Omit<Treatment, 'id'>) => void;
+  addInjury: (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => Promise<void>;
+  addTreatment: (injuryId: string, treatment: Omit<Treatment, 'id'>) => Promise<void>;
   getInjuryById: (injuryId: string) => Injury | undefined;
+  loading: boolean;
 };
 
 const InjuryDataContext = createContext<InjuryDataContextType | undefined>(undefined);
 
-const sampleInjuries: Injury[] = [
-    {
-        id: '1',
-        type: 'Knee Sprain',
-        severity: 7,
-        date: new Date('2024-05-10'),
-        treatments: [
-            { id: 't1', date: new Date('2024-05-11'), activity: 'Icing', notes: 'Applied for 15 minutes.'},
-            { id: 't2', date: new Date('2024-05-12'), activity: 'Physical Therapy', notes: 'Stretching exercises.'},
-            { id: 't3', date: new Date('2024-05-15'), activity: 'Rest', notes: 'Avoided strenuous activity.'},
-        ],
-        recoveryHistory: [
-          { date: new Date('2024-05-10'), severity: 7 },
-          { date: new Date('2024-05-13'), severity: 6 },
-          { date: new Date('2024-05-16'), severity: 5 },
-          { date: new Date('2024-05-20'), severity: 4 },
-        ]
-    },
-    {
-        id: '2',
-        type: 'Shoulder Strain',
-        severity: 5,
-        date: new Date('2024-06-15'),
-        treatments: [
-           { id: 't4', date: new Date('2024-06-16'), activity: 'Heat Pack', notes: 'Applied for 20 minutes.'},
-        ],
-        recoveryHistory: [
-          { date: new Date('2024-06-15'), severity: 5 },
-          { date: new Date('2024-06-18'), severity: 4 },
-          { date: new Date('2024-06-22'), severity: 4 },
-        ]
-    }
-];
-
 export function InjuryDataProvider({ children }: { children: ReactNode }) {
-  const [injuries, setInjuries] = useState<Injury[]>(sampleInjuries);
+  const firestore = useFirestore();
+  const { user } = useUser();
 
-  const addInjury = useCallback((injury: Omit<Injury, 'id' | 'treatments' | 'recoveryHistory'>) => {
-    const newInjury: Injury = {
-      ...injury,
-      id: new Date().toISOString(),
-      treatments: [],
-      recoveryHistory: [{ date: injury.date, severity: injury.severity }],
-    };
-    setInjuries((prev) => [newInjury, ...prev]);
-  }, []);
+  const injuriesQuery = useMemo(() => {
+    if (!firestore || !user?.uid) return null;
+    return query(collection(firestore, 'users', user.uid, 'injuries'), orderBy('date', 'desc'));
+  }, [firestore, user?.uid]);
 
-  const addTreatment = useCallback((injuryId: string, treatment: Omit<Treatment, 'id'>) => {
-    setInjuries((prev) =>
-      prev.map((injury) => {
-        if (injury.id === injuryId) {
-          const updatedInjury = {
-            ...injury,
-            treatments: [
-              { ...treatment, id: new Date().toISOString() },
-              ...injury.treatments,
-            ],
-          };
+  const { data: injuries = [], loading } = useCollection<Injury>(injuriesQuery);
 
-          // If the new treatment changes severity, update it. For now, let's assume some activities reduce severity.
-          // This is a simplified logic.
-          const newSeverity = Math.max(1, injury.severity - 1);
-          updatedInjury.severity = newSeverity;
-          updatedInjury.recoveryHistory = [
-            ...injury.recoveryHistory,
-            { date: treatment.date, severity: newSeverity }
-          ];
-          
-          return updatedInjury;
-        }
-        return injury;
-      })
-    );
-  }, []);
+  const addInjury = useCallback(async (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => {
+    if (!firestore || !user?.uid) throw new Error("User or Firestore not available");
+
+    const injuriesCollection = collection(firestore, 'users', user.uid, 'injuries');
+    await addDoc(injuriesCollection, {
+        ...injury,
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        // Initialize with empty arrays for subcollections in the data model
+        treatments: [],
+        recoveryHistory: [{ date: injury.date, severity: injury.severity }],
+    });
+  }, [firestore, user?.uid]);
+
+  const addTreatment = useCallback(async (injuryId: string, treatment: Omit<Treatment, 'id'>) => {
+    if (!firestore || !user?.uid) throw new Error("User or Firestore not available");
+
+    const treatmentsCollection = collection(firestore, 'users', user.uid, 'injuries', injuryId, 'treatments');
+    await addDoc(treatmentsCollection, {
+        ...treatment,
+        createdAt: serverTimestamp(),
+    });
+    // Note: In a real app, you might want to update the injury's severity
+    // or recovery history here via a transaction or another doc update.
+    // For simplicity, we are omitting that for now. The chart will still
+    // reflect history if it is manually updated or handled by another process.
+  }, [firestore, user?.uid]);
 
   const getInjuryById = useCallback((injuryId: string) => {
     return injuries.find(injury => injury.id === injuryId);
   }, [injuries]);
 
+  const value = {
+    injuries,
+    addInjury,
+    addTreatment,
+    getInjuryById,
+    loading
+  };
+
   return (
-    <InjuryDataContext.Provider value={{ injuries, addInjury, addTreatment, getInjuryById }}>
+    <InjuryDataContext.Provider value={value}>
       {children}
     </InjuryDataContext.Provider>
   );

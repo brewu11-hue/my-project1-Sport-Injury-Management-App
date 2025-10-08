@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { InjuryDataProvider, useInjuryData, Injury } from '@/hooks/use-injury-data';
 import InjuryList from '@/components/dashboard/injury-list';
 import InjuryDetails from '@/components/dashboard/injury-details';
@@ -8,9 +8,29 @@ import RecoveryProgressChart from '@/components/dashboard/recovery-progress-char
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 
 function DashboardContent() {
-  const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>('1');
-  const { injuries } = useInjuryData();
-  const selectedInjury = injuries.find((i) => i.id === selectedInjuryId) || null;
+  const { injuries, loading } = useInjuryData();
+  
+  // Set the initially selected injury to the most recent one.
+  const mostRecentInjuryId = useMemo(() => {
+    if (injuries && injuries.length > 0) {
+      return injuries[0].id;
+    }
+    return null;
+  }, [injuries]);
+
+  const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mostRecentInjuryId && !selectedInjuryId) {
+      setSelectedInjuryId(mostRecentInjuryId);
+    }
+  }, [mostRecentInjuryId, selectedInjuryId]);
+
+
+  const selectedInjury = useMemo(() => {
+    if (!selectedInjuryId) return null;
+    return injuries.find((i) => i.id === selectedInjuryId) || null;
+  }, [injuries, selectedInjuryId]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">

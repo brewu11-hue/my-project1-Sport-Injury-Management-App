@@ -34,6 +34,9 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
+import { useCollection } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
 
 const treatmentSchema = z.object({
   activity: z.string().min(1, 'Activity is required.'),
@@ -42,6 +45,53 @@ const treatmentSchema = z.object({
 });
 
 type TreatmentFormValues = z.infer<typeof treatmentSchema>;
+
+function TreatmentsTable({ injuryId }: { injuryId: string }) {
+    const firestore = useFirestore();
+    const { user } = useUser();
+
+    const treatmentsQuery = useMemo(() => {
+        if (!firestore || !user?.uid) return null;
+        return query(collection(firestore, 'users', user.uid, 'injuries', injuryId, 'treatments'), orderBy('date', 'desc'));
+    }, [firestore, user?.uid, injuryId]);
+
+    const { data: treatments = [], loading } = useCollection(treatmentsQuery);
+
+    if (loading) {
+        return <div className="text-center p-8">Loading treatments...</div>;
+    }
+
+    return (
+        <div className="mt-4 rounded-md border">
+        <Table>
+            <TableHeader>
+            <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Activity</TableHead>
+                <TableHead>Notes</TableHead>
+            </TableRow>
+            </TableHeader>
+            <TableBody>
+            {treatments && treatments.length > 0 ? (
+                treatments.map((treatment) => (
+                <TableRow key={treatment.id}>
+                    <TableCell className="font-medium">{format(treatment.date.toDate(), 'MMM d')}</TableCell>
+                    <TableCell>{treatment.activity}</TableCell>
+                    <TableCell>{treatment.notes}</TableCell>
+                </TableRow>
+                ))
+            ) : (
+                <TableRow>
+                <TableCell colSpan={3} className="h-24 text-center">
+                    No treatments logged yet.
+                </TableCell>
+                </TableRow>
+            )}
+            </TableBody>
+        </Table>
+        </div>
+    );
+}
 
 export default function TreatmentLog({ injury }: { injury: Injury }) {
   const { addTreatment } = useInjuryData();
@@ -56,13 +106,21 @@ export default function TreatmentLog({ injury }: { injury: Injury }) {
     },
   });
 
-  function onSubmit(data: TreatmentFormValues) {
-    addTreatment(injury.id, data);
-    toast({
-      title: 'Treatment Logged',
-      description: `${data.activity} added for ${injury.type}.`,
-    });
-    form.reset({ activity: '', notes: '', date: new Date() });
+  async function onSubmit(data: TreatmentFormValues) {
+    try {
+        await addTreatment(injury.id, data);
+        toast({
+        title: 'Treatment Logged',
+        description: `${data.activity} added for ${injury.type}.`,
+        });
+        form.reset({ activity: '', notes: '', date: new Date() });
+    } catch(e) {
+        toast({
+            variant: "destructive",
+            title: 'Failed to log treatment',
+            description: 'There was an issue saving your treatment. Please try again.',
+        });
+    }
   }
 
   return (
@@ -118,41 +176,17 @@ export default function TreatmentLog({ injury }: { injury: Injury }) {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Log Activity</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? 'Logging...' : 'Log Activity'}
+                </Button>
               </form>
             </Form>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
-      <div className="mt-4 rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Activity</TableHead>
-              <TableHead>Notes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {injury.treatments.length > 0 ? (
-              injury.treatments.map((treatment) => (
-                <TableRow key={treatment.id}>
-                  <TableCell className="font-medium">{format(treatment.date, 'MMM d')}</TableCell>
-                  <TableCell>{treatment.activity}</TableCell>
-                  <TableCell>{treatment.notes}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center">
-                  No treatments logged yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <TreatmentsTable injuryId={injury.id} />
+      
     </div>
   );
 }

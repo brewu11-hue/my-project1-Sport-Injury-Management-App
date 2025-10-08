@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL of the user's profile photo."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the user profile was created."
+        }
+      },
+      "required": ["displayName", "email"]
+    },
+    "Injury": {
+      "title": "Injury",
+      "description": "Represents a single sports injury log.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who logged the injury."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of injury (e.g., Ankle Sprain)."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date the injury occurred."
+        },
+        "severity": {
+          "type": "number",
+          "description": "A severity rating from 1 to 10."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the injury was logged."
+        }
+      },
+      "required": ["userId", "type", "date", "severity"]
+    },
+    "Treatment": {
+      "title": "Treatment",
+      "description": "Represents a recovery activity for an injury.",
+      "type": "object",
+      "properties": {
+        "activity": {
+          "type": "string",
+          "description": "The recovery activity performed (e.g., Icing, Stretching)."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date the treatment was performed."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about the treatment."
+        },
+         "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the treatment was logged."
+        }
+      },
+      "required": ["activity", "date"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores public information for each user."
+    },
+    "/users/{userId}/injuries/{injuryId}": {
+      "schema": {
+        "$ref": "#/entities/Injury"
+      },
+      "description": "Stores injury logs for each user."
+    },
+    "/users/{userId}/injuries/{injuryId}/treatments/{treatmentId}": {
+        "schema": {
+          "$ref": "#/entities/Treatment"
+        },
+        "description": "Stores treatment logs for each injury."
+    }
+  }
+}

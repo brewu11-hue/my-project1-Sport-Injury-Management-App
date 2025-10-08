@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import TreatmentLog from './treatment-log';
 import { Activity, Info } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Timestamp } from 'firebase/firestore';
 
 type InjuryDetailsProps = {
   injury: Injury | null;
@@ -24,13 +25,15 @@ export default function InjuryDetails({ injury }: InjuryDetailsProps) {
       </Card>
     );
   }
+  
+  const injuryDate = injury.date instanceof Timestamp ? injury.date.toDate() : injury.date;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">{injury.type}</CardTitle>
         <CardDescription>
-          Injured on {format(injury.date, 'MMMM d, yyyy')}
+          Injured on {format(injuryDate, 'MMMM d, yyyy')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

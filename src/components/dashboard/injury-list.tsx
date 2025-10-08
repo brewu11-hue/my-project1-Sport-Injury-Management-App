@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useInjuryData } from '@/hooks/use-injury-data';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AddInjuryDialog } from './add-injury-dialog';
 import { Input } from '../ui/input';
+import { Timestamp } from 'firebase/firestore';
 
 type InjuryListProps = {
   selectedInjuryId: string | null;
@@ -17,7 +18,7 @@ type InjuryListProps = {
 };
 
 export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryListProps) {
-  const { injuries } = useInjuryData();
+  const { injuries, loading } = useInjuryData();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredInjuries = injuries.filter((injury) =>
@@ -50,36 +51,43 @@ export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryL
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-25rem)]">
           <div className="flex flex-col gap-2 p-4 pt-0">
-            {filteredInjuries.length > 0 ? (
-              filteredInjuries.map((injury) => (
-              <button
-                key={injury.id}
-                className={cn(
-                  'flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent/50',
-                  selectedInjuryId === injury.id && 'bg-accent'
-                )}
-                onClick={() => onSelectInjury(injury.id)}
-              >
-                <div className="flex w-full flex-col gap-1">
-                  <div className="flex items-center">
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold">{injury.type}</div>
-                    </div>
-                    <div
-                      className={cn(
-                        'ml-auto text-xs',
-                        selectedInjuryId === injury.id ? 'text-foreground' : 'text-muted-foreground'
-                      )}
-                    >
-                      {format(injury.date, 'PPP')}
-                    </div>
-                  </div>
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Current Severity: {injury.severity}/10
-                  </div>
+            {loading ? (
+                <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground"/>
                 </div>
-              </button>
-            ))
+            ) : filteredInjuries.length > 0 ? (
+              filteredInjuries.map((injury) => {
+                const injuryDate = injury.date instanceof Timestamp ? injury.date.toDate() : injury.date;
+                return (
+                  <button
+                    key={injury.id}
+                    className={cn(
+                      'flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent/50',
+                      selectedInjuryId === injury.id && 'bg-accent'
+                    )}
+                    onClick={() => onSelectInjury(injury.id)}
+                  >
+                    <div className="flex w-full flex-col gap-1">
+                      <div className="flex items-center">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold">{injury.type}</div>
+                        </div>
+                        <div
+                          className={cn(
+                            'ml-auto text-xs',
+                            selectedInjuryId === injury.id ? 'text-foreground' : 'text-muted-foreground'
+                          )}
+                        >
+                          {format(injuryDate, 'PPP')}
+                        </div>
+                      </div>
+                      <div className="text-xs font-medium text-muted-foreground">
+                        Current Severity: {injury.severity}/10
+                      </div>
+                    </div>
+                  </button>
+                )
+              })
             ) : (
               <div className="text-center text-muted-foreground p-8">
                 No injuries found.

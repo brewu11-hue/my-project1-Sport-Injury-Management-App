@@ -49,14 +49,23 @@ export function AddInjuryDialog({ children }: { children: React.ReactNode }) {
     },
   });
 
-  function onSubmit(data: InjuryFormValues) {
-    addInjury(data);
-    toast({
-      title: 'Injury Logged',
-      description: `${data.type} has been added to your log.`,
-    });
-    setOpen(false);
-    form.reset();
+  async function onSubmit(data: InjuryFormValues) {
+    try {
+      await addInjury(data);
+      toast({
+        title: 'Injury Logged',
+        description: `${data.type} has been added to your log.`,
+      });
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error("Failed to add injury:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to log injury',
+        description: 'There was an issue saving your injury. Please try again.',
+      });
+    }
   }
 
   return (
@@ -118,7 +127,9 @@ export function AddInjuryDialog({ children }: { children: React.ReactNode }) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Injury</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save Injury'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
