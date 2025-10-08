@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
   type ReactNode,
 } from 'react';
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -31,19 +30,21 @@ function startEmulators(firestore: Firestore, auth: Auth) {
   if (typeof window !== 'undefined' && !window[EMULATORS_STARTED]) {
     // @ts-ignore
     window[EMULATORS_STARTED] = true;
-    connectFirestoreEmulator(firestore, 'localhost', 8080);
-    connectAuthEmulator(auth, 'http://localhost:9099', {
-      disableWarnings: true,
-    });
+    try {
+      connectFirestoreEmulator(firestore, 'localhost', 8080);
+      connectAuthEmulator(auth, 'http://localhost:9099', {
+        disableWarnings: true,
+      });
+    } catch (e) {
+      console.error("Error connecting to emulators. Make sure they are running.", e);
+    }
   }
 }
 
 export function initializeFirebase(): FirebaseContextValue {
-  const isConfigured = getApps().length > 0;
-  const app = isConfigured ? getApp() : initializeApp(firebaseConfig);
+  const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const firestore = getFirestore(app);
   const auth = getAuth(app);
-
   return { app, firestore, auth };
 }
 
