@@ -5,16 +5,13 @@ import type {
   DocumentData,
   FirestoreError,
   QuerySnapshot,
-  Timestamp,
 } from 'firebase/firestore';
-import { onSnapshot } from 'firebase/firestore';
+import { onSnapshot, Timestamp } from 'firebase/firestore';
 import { useUser } from '@/firebase';
 
 interface UseCollectionOptions {
   listen?: boolean;
 }
-
-const useMemoFirebase = (creator: () => any, deps: any[]) => useMemo(creator, deps);
 
 // Function to recursively convert Timestamps to Dates
 const convertTimestampsToDates = (data: any): any => {
@@ -46,8 +43,6 @@ function useCollection<T extends DocumentData>(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
-  const memoizedQuery = useMemoFirebase(() => query, [JSON.stringify(query)]);
-
   useEffect(() => {
     // Wait until user's auth state is confirmed
     if (userLoading) {
@@ -56,7 +51,7 @@ function useCollection<T extends DocumentData>(
     }
     
     // If no user is logged in, or query is null, stop loading and return empty array.
-    if (!memoizedQuery || !user) {
+    if (!query || !user) {
         setData([]);
         setLoading(false);
         return;
@@ -65,7 +60,7 @@ function useCollection<T extends DocumentData>(
     setLoading(true);
 
     const unsubscribe = onSnapshot(
-      memoizedQuery,
+      query,
       (snapshot: QuerySnapshot<T>) => {
         const docs = snapshot.docs.map((doc) => {
           const docData = doc.data();
@@ -86,7 +81,7 @@ function useCollection<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedQuery, user, userLoading]);
+  }, [query, user, userLoading]);
 
   return { data: data ?? [], loading, error };
 }

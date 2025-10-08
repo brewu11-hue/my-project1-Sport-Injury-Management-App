@@ -14,8 +14,6 @@ interface UseDocOptions {
   listen?: boolean;
 }
 
-const useMemoFirebase = (creator, deps) => useMemo(creator, deps);
-
 // Function to recursively convert Timestamps to Dates
 const convertTimestampsToDates = (data: any): any => {
     if (data instanceof Timestamp) {
@@ -46,8 +44,6 @@ function useDoc<T extends DocumentData>(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
-  const memoizedRef = useMemoFirebase(() => ref, [JSON.stringify(ref)]);
-
   useEffect(() => {
     // Wait until user's auth state is confirmed
     if (userLoading) {
@@ -56,7 +52,7 @@ function useDoc<T extends DocumentData>(
     }
     
     // If no user is logged in, or ref is null, stop.
-    if (!memoizedRef || !user) {
+    if (!ref || !user) {
       setLoading(false);
       setData(null);
       return;
@@ -65,7 +61,7 @@ function useDoc<T extends DocumentData>(
     setLoading(true);
     
     const unsubscribe = onSnapshot(
-      memoizedRef,
+      ref,
       (snapshot: DocumentSnapshot<T>) => {
         if (snapshot.exists()) {
           const docData = snapshot.data();
@@ -84,7 +80,7 @@ function useDoc<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedRef, user, userLoading]);
+  }, [ref, user, userLoading]);
 
   return { data, loading, error };
 }
