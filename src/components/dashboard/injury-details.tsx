@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import TreatmentLog from './treatment-log';
 import { Activity, Info } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Timestamp } from 'firebase/firestore';
 
 type InjuryDetailsProps = {
   injury: Injury | null;
@@ -28,8 +27,7 @@ export default function InjuryDetails({ injury }: InjuryDetailsProps) {
     );
   }
   
-  // Safely handle both Timestamp and Date objects
-  const injuryDate = injury.date instanceof Timestamp ? injury.date.toDate() : new Date(injury.date);
+  const injuryDate = new Date(injury.date);
 
   return (
     <Card>

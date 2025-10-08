@@ -5,6 +5,7 @@ import type {
   DocumentData,
   FirestoreError,
   QuerySnapshot,
+  Timestamp,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { useUser } from '@/firebase';
@@ -13,7 +14,28 @@ interface UseCollectionOptions {
   listen?: boolean;
 }
 
-const useMemoFirebase = (creator, deps) => useMemo(creator, deps);
+const useMemoFirebase = (creator: () => any, deps: any[]) => useMemo(creator, deps);
+
+// Function to recursively convert Timestamps to Dates
+const convertTimestampsToDates = (data: any): any => {
+    if (data instanceof Timestamp) {
+        return data.toDate();
+    }
+    if (Array.isArray(data)) {
+        return data.map(item => convertTimestampsToDates(item));
+    }
+    if (data !== null && typeof data === 'object') {
+        const newData: { [key: string]: any } = {};
+        for (const key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                newData[key] = convertTimestampsToDates(data[key]);
+            }
+        }
+        return newData;
+    }
+    return data;
+};
+
 
 function useCollection<T extends DocumentData>(
   query: Query<T> | null,
@@ -42,10 +64,14 @@ function useCollection<T extends DocumentData>(
     const unsubscribe = onSnapshot(
       memoizedQuery,
       (snapshot: QuerySnapshot<T>) => {
-        const docs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as T)); // Cast to T, assuming data matches
+        const docs = snapshot.docs.map((doc) => {
+          const docData = doc.data();
+          const dataWithDates = convertTimestampsToDates(docData);
+          return {
+            id: doc.id,
+            ...dataWithDates,
+          } as T;
+        });
         setData(docs);
         setLoading(false);
       },
@@ -59,7 +85,7 @@ function useCollection<T extends DocumentData>(
     return () => unsubscribe();
   }, [memoizedQuery, user, userLoading]);
 
-  return { data, loading, error };
+  return { data: data ?? [], loading, error };
 }
 
 export { useCollection };

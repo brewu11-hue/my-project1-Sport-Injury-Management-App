@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AddInjuryDialog } from './add-injury-dialog';
 import { Input } from '../ui/input';
-import { Timestamp } from 'firebase/firestore';
 
 type InjuryListProps = {
   selectedInjuryId: string | null;
@@ -57,7 +56,7 @@ export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryL
                 </div>
             ) : filteredInjuries.length > 0 ? (
               filteredInjuries.map((injury) => {
-                const injuryDate = injury.date instanceof Timestamp ? injury.date.toDate() : injury.date;
+                const injuryDate = new Date(injury.date);
                 return (
                   <button
                     key={injury.id}

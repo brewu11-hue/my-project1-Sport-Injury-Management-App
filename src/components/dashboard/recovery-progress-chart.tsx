@@ -4,7 +4,6 @@
 import { Injury } from '@/hooks/use-injury-data';
 import { ChartTooltip, ChartTooltipContent, ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { LineChart, CartesianGrid, XAxis, YAxis, Line, Legend } from 'recharts';
-import { Timestamp } from 'firebase/firestore';
 
 type RecoveryProgressChartProps = {
   injuries: Injury[];
@@ -21,14 +20,11 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
   }
 
   const allHistory = injuries.flatMap(injury => 
-    injury.recoveryHistory?.map(h => {
-      const historyDate = h.date instanceof Timestamp ? h.date.toDate() : h.date;
-      return {
+    injury.recoveryHistory?.map(h => ({
         injuryType: injury.type,
-        date: historyDate,
+        date: new Date(h.date),
         severity: h.severity
-      }
-    }) ?? []
+      })) ?? []
   );
 
   if (allHistory.length === 0) {
@@ -47,7 +43,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
       if (!injury.recoveryHistory) return;
 
       const historyForDate = injury.recoveryHistory
-        .map(h => ({ ...h, date: h.date instanceof Timestamp ? h.date.toDate() : new Date(h.date) }))
+        .map(h => ({ ...h, date: new Date(h.date) }))
         .filter(h => new Date(h.date).toISOString().split('T')[0] <= dateStr)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 

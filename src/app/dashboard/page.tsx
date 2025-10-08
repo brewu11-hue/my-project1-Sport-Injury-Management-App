@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { InjuryDataProvider, useInjuryData, Injury } from '@/hooks/use-injury-data';
 import InjuryList from '@/components/dashboard/injury-list';
 import InjuryDetails from '@/components/dashboard/injury-details';
@@ -8,7 +8,7 @@ import RecoveryProgressChart from '@/components/dashboard/recovery-progress-char
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 
 function DashboardContent() {
-  const { injuries, loading } = useInjuryData();
+  const { injuries } = useInjuryData();
   const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>(null);
 
   const selectedInjury = useMemo(() => {
