@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { collection, addDoc, serverTimestamp, Timestamp, doc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, Timestamp, doc, query, orderBy, updateDoc, arrayUnion } from 'firebase/firestore';
 import { useAuth, useCollection, useFirestore, useUser } from '@/firebase';
 
 export type Treatment = {
@@ -17,7 +17,7 @@ export type Injury = {
   severity: number; // 1-10
   date: Date;
   treatments?: Treatment[];
-  recoveryHistory?: { date: Date; severity: number }[];
+  recoveryHistory?: { date: Date | Timestamp; severity: number }[];
   createdAt: Timestamp;
   userId: string;
 };
@@ -26,6 +26,7 @@ type InjuryDataContextType = {
   injuries: Injury[];
   addInjury: (injury: Pick<Injury, 'type' | 'date' | 'severity'>) => Promise<void>;
   addTreatment: (injuryId: string, treatment: Omit<Treatment, 'id'>) => Promise<void>;
+  updateInjurySeverity: (injuryId: string, severity: number, date: Date) => Promise<void>;
   getInjuryById: (injuryId: string) => Injury | undefined;
   loading: boolean;
 };
@@ -51,9 +52,7 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
         ...injury,
         userId: user.uid,
         createdAt: serverTimestamp(),
-        // Initialize with empty arrays for subcollections in the data model
-        treatments: [],
-        recoveryHistory: [{ date: injury.date, severity: injury.severity }],
+        recoveryHistory: [{ date: Timestamp.fromDate(injury.date), severity: injury.severity }],
     });
   }, [firestore, user?.uid]);
 
@@ -65,10 +64,15 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
         ...treatment,
         createdAt: serverTimestamp(),
     });
-    // Note: In a real app, you might want to update the injury's severity
-    // or recovery history here via a transaction or another doc update.
-    // For simplicity, we are omitting that for now. The chart will still
-    // reflect history if it is manually updated or handled by another process.
+  }, [firestore, user?.uid]);
+
+  const updateInjurySeverity = useCallback(async (injuryId: string, severity: number, date: Date) => {
+    if (!firestore || !user?.uid) throw new Error("User or Firestore not available");
+    const injuryRef = doc(firestore, 'users', user.uid, 'injuries', injuryId);
+    await updateDoc(injuryRef, {
+        severity: severity,
+        recoveryHistory: arrayUnion({ date: Timestamp.fromDate(date), severity: severity })
+    });
   }, [firestore, user?.uid]);
 
   const getInjuryById = useCallback((injuryId: string) => {
@@ -79,6 +83,7 @@ export function InjuryDataProvider({ children }: { children: ReactNode }) {
     injuries,
     addInjury,
     addTreatment,
+    updateInjurySeverity,
     getInjuryById,
     loading
   };

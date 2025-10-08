@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Injury } from '@/hooks/use-injury-data';
+import { Injury, useInjuryData } from '@/hooks/use-injury-data';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { format } from 'date-fns';
 import TreatmentLog from './treatment-log';
@@ -14,6 +14,8 @@ type InjuryDetailsProps = {
 };
 
 export default function InjuryDetails({ injury }: InjuryDetailsProps) {
+  const { updateInjurySeverity } = useInjuryData();
+  
   if (!injury) {
     return (
       <Card className="flex h-full items-center justify-center">
@@ -44,7 +46,7 @@ export default function InjuryDetails({ injury }: InjuryDetailsProps) {
              <span className="text-muted-foreground">/ 10</span>
           </div>
         </div>
-        <TreatmentLog injury={injury} />
+        <TreatmentLog injury={injury} updateSeverity={updateInjurySeverity} />
       </CardContent>
       <CardFooter>
           <Button asChild variant="outline">
