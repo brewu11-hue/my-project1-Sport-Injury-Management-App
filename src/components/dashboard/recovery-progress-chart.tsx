@@ -39,7 +39,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
     );
   }
 
-  const dates = [...new Set(allHistory.map(h => h.date.toISOString().split('T')[0]))].sort();
+  const dates = [...new Set(allHistory.map(h => new Date(h.date).toISOString().split('T')[0]))].sort();
   
   const chartData = dates.map(dateStr => {
     const record: { [key: string]: any } = { date: new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
@@ -47,9 +47,9 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
       if (!injury.recoveryHistory) return;
 
       const historyForDate = injury.recoveryHistory
-        .map(h => ({ ...h, date: h.date instanceof Timestamp ? h.date.toDate() : h.date }))
-        .filter(h => h.date.toISOString().split('T')[0] <= dateStr)
-        .sort((a, b) => b.date.getTime() - a.date.getTime());
+        .map(h => ({ ...h, date: h.date instanceof Timestamp ? h.date.toDate() : new Date(h.date) }))
+        .filter(h => new Date(h.date).toISOString().split('T')[0] <= dateStr)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       if (historyForDate.length > 0) {
          record[injury.type] = historyForDate[0].severity;

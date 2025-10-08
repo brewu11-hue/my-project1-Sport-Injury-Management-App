@@ -90,7 +90,7 @@ export default function InjuryList({ selectedInjuryId, onSelectInjury }: InjuryL
               })
             ) : (
               <div className="text-center text-muted-foreground p-8">
-                No injuries found.
+                No injuries logged yet.
               </div>
             )}
           </div>
