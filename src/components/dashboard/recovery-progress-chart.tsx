@@ -4,6 +4,7 @@
 import { Injury } from '@/hooks/use-injury-data';
 import { ChartTooltip, ChartTooltipContent, ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { LineChart, CartesianGrid, XAxis, YAxis, Line, Legend } from 'recharts';
+import { format } from 'date-fns';
 
 type RecoveryProgressChartProps = {
   injuries: Injury[];
@@ -21,11 +22,13 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
 
   const allHistory = injuries.flatMap(injury => 
     injury.recoveryHistory?.map(h => ({
+        injuryId: injury.id,
         injuryType: injury.type,
-        date: new Date(h.date),
+        date: new Date(h.date), // Ensure it's a Date object
         severity: h.severity
       })) ?? []
-  );
+  ).sort((a, b) => a.date.getTime() - b.date.getTime());
+
 
   if (allHistory.length === 0) {
     return (
@@ -35,29 +38,34 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
     );
   }
 
-  const dates = [...new Set(allHistory.map(h => new Date(h.date).toISOString().split('T')[0]))].sort();
+  const chartDataMap = new Map<string, { [key: string]: any }>();
+
+  for (const record of allHistory) {
+    const dateString = format(record.date, 'yyyy-MM-dd');
+    if (!chartDataMap.has(dateString)) {
+        chartDataMap.set(dateString, { date: format(record.date, 'MMM d') });
+    }
+    const entry = chartDataMap.get(dateString)!;
+    entry[record.injuryType] = record.severity;
+  }
   
-  const chartData = dates.map(dateStr => {
-    const record: { [key: string]: any } = { date: new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
-    injuries.forEach(injury => {
-      if (!injury.recoveryHistory) return;
+  const chartData = Array.from(chartDataMap.values());
 
-      const historyForDate = injury.recoveryHistory
-        .map(h => ({ ...h, date: new Date(h.date) }))
-        .filter(h => new Date(h.date).toISOString().split('T')[0] <= dateStr)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Forward-fill missing data points
+  const injuryTypes = injuries.map(i => i.type);
+  for (let i = 1; i < chartData.length; i++) {
+    for (const type of injuryTypes) {
+        if (chartData[i][type] === undefined) {
+            chartData[i][type] = chartData[i - 1][type];
+        }
+    }
+  }
 
-      if (historyForDate.length > 0) {
-         record[injury.type] = historyForDate[0].severity;
-      }
-    });
-    return record;
-  });
 
   const chartConfig = injuries.reduce((config, injury, index) => {
     config[injury.type] = {
       label: injury.type,
-      color: `hsl(var(--chart-${(index % 2) + 1}))`,
+      color: `hsl(var(--chart-${(index % 5) + 1}))`,
     };
     return config;
   }, {} as ChartConfig);
@@ -74,6 +82,7 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
         />
         <YAxis
           domain={[0, 10]}
+          allowDecimals={false}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
@@ -86,10 +95,10 @@ export default function RecoveryProgressChart({ injuries }: RecoveryProgressChar
             key={injury.id}
             dataKey={injury.type}
             type="monotone"
-            stroke={`hsl(var(--chart-${(index % 2) + 1}))`}
+            stroke={`hsl(var(--chart-${(index % 5) + 1}))`}
             strokeWidth={2}
             dot={false}
-            connectNulls
+            connectNulls={true}
           />
         ))}
       </LineChart>
