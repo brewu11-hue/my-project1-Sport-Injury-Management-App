@@ -32,6 +32,7 @@ const prompt = ai.definePrompt({
   name: 'getInjuryInfoPrompt',
   input: {schema: GetInjuryInfoInputSchema},
   output: {schema: GetInjuryInfoOutputSchema},
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an expert in sports medicine and physical therapy. Your goal is to provide clear, helpful, and safe information about sports injuries to athletes.
 
 Provide detailed information for the following injury: {{{injuryName}}}.
