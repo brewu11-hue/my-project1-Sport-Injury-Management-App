@@ -1,9 +1,8 @@
-'use server';
+'use client';
 
 import { getAuth } from 'firebase/auth';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { firebaseConfig } from '@/firebase/config';
-import { redirect } from 'next/navigation';
 
 function getClientApp() {
   if (getApps().length) {
@@ -15,5 +14,4 @@ function getClientApp() {
 export async function signOut() {
   const auth = getAuth(getClientApp());
   await auth.signOut();
-  redirect('/login');
 }

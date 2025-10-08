@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { signOut } from '@/firebase/auth/sign-out';
+import { signOut } from '@/firebase/auth/sign-out-client';
 import { Skeleton } from '../ui/skeleton';
 import { useEffect } from 'react';
 
@@ -56,6 +56,12 @@ const menuItems = [
 
 function UserMenu() {
   const { user, loading } = useUser();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   if (loading) {
     return <Skeleton className="h-8 w-8 rounded-full" />;
@@ -89,7 +95,7 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={handleSignOut}>
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
