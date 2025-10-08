@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, redirect } from 'next/navigation';
 import { Dumbbell } from 'lucide-react';
 import {
   SidebarProvider,
@@ -17,7 +17,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase/auth/use-user';
+import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -99,9 +99,22 @@ function UserMenu() {
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const { user, loading } = useUser();
 
   if (pathname === '/login') {
     return <>{children}</>;
+  }
+
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <Dumbbell className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  if (!user) {
+    redirect('/login');
   }
 
   return (
