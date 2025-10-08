@@ -22,12 +22,13 @@ export default function FirebaseClientProvider({
 
   useEffect(() => {
     // This effect runs only on the client, after the component mounts.
+    // This is the correct place to initialize client-side Firebase services.
     const { app, firestore, auth } = initializeFirebase();
     setServices({ app, firestore, auth });
   }, []);
 
-  // While services are being initialized on the client, you can render a loading state
-  // or null, but for this app, the AppShell will handle the main loading indicator.
+  // While services are being initialized on the client, the rest of the app might
+  // show a loading state or nothing at all. `AppShell` handles the top-level loading UI.
   if (!services) {
     return null;
   }
