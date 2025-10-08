@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 
 const GetInjuryInfoInputSchema = z.object({
   injuryName: z.string().describe('The name of the sports injury to look up.'),
@@ -42,7 +41,6 @@ Provide detailed information for the following injury: {{{injuryName}}}.
 - **General Treatment**: Offer general advice for initial management and recovery (e.g., R.I.C.E. principle, when to see a doctor, types of exercises that might help).
 - **Disclaimer**: Always include this exact disclaimer: "This information is for educational purposes only and is not a substitute for professional medical diagnosis or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition."
 `,
-  model: googleAI('gemini-1.5-flash-latest')
 });
 
 const getInjuryInfoFlow = ai.defineFlow(
