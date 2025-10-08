@@ -46,7 +46,7 @@ export default function AuthForm() {
     return (
       <>
         <CardContent>
-            <Button onClick={handleGoogleSignIn} className="w-full bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:text-blue-700">
+            <Button onClick={handleGoogleSignIn} className="w-full">
                 <GoogleIcon />
                 Sign in with Google
             </Button>
