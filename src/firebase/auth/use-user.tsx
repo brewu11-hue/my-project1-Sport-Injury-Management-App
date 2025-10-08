@@ -11,7 +11,8 @@ export function useUser() {
 
   useEffect(() => {
     if (!auth) {
-        setLoading(false);
+        // Auth service is not yet available, still loading.
+        setLoading(true);
         return;
     }
 

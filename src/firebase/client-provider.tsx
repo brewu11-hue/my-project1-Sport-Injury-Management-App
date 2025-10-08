@@ -22,11 +22,10 @@ type FirebaseContextValue = {
   app: FirebaseApp;
   firestore: Firestore;
   auth: Auth;
-};
+} | null;
 
-const FirebaseContext = createContext<FirebaseContextValue | null>(null);
+const FirebaseContext = createContext<FirebaseContextValue>(null);
 
-// This flag ensures that emulators are only connected once.
 let emulatorsConnected = false;
 
 function connectToEmulators(firestore: Firestore, auth: Auth) {
@@ -55,26 +54,17 @@ export default function FirebaseClientProvider({
 }: {
   children: ReactNode;
 }) {
-  const [services, setServices] = useState<FirebaseContextValue | null>(null);
+  const [services, setServices] = useState<FirebaseContextValue>(null);
 
   useEffect(() => {
-    // This effect runs only on the client, after the component mounts.
-    // This is the correct place to initialize client-side Firebase services.
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const firestore = getFirestore(app);
     const auth = getAuth(app);
 
-    // Safely connect to emulators only on the client
     connectToEmulators(firestore, auth);
 
     setServices({ app, firestore, auth });
   }, []);
-
-  // While services are being initialized on the client, the rest of the app might
-  // show a loading state or nothing at all. `AppShell` handles the top-level loading UI.
-  if (!services) {
-    return null;
-  }
 
   return (
     <FirebaseContext.Provider value={services}>
@@ -95,7 +85,6 @@ export const useAuth = () => {
   return useContext(FirebaseContext)?.auth;
 };
 
-// This function is kept for any server-side initialization needs, but it's now lean.
 export function initializeFirebase(): { app: FirebaseApp } {
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   return { app };
