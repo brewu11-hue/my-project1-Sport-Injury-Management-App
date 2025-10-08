@@ -18,28 +18,27 @@ export async function searchInjuryInfo(prevState: SearchState, formData: FormDat
         injuryName: formData.get('injuryName') as string,
     }
 
+    // Always start with null data for a new submission
+    const newState: SearchState = {
+        data: null,
+        input: rawFormData,
+    };
+
     const validatedFields = GetInjuryInfoSchema.safeParse(rawFormData);
     if (!validatedFields.success) {
-        return {
-            data: null,
-            input: rawFormData,
-            error: validatedFields.error.flatten().fieldErrors.injuryName?.[0] || 'Invalid input.',
-        };
+        newState.error = validatedFields.error.flatten().fieldErrors.injuryName?.[0] || 'Invalid input.';
+        return newState;
     }
+    
+    newState.input = validatedFields.data;
 
     try {
         const result = await getInjuryInfo(validatedFields.data);
-        return {
-            data: result,
-            input: validatedFields.data,
-            error: undefined,
-        };
+        newState.data = result;
+        return newState;
     } catch (error) {
         console.error("Failed to get injury info:", error);
-        return {
-            data: null,
-            input: validatedFields.data,
-            error: 'The AI model failed to retrieve information. Please try again.',
-        }
+        newState.error = 'The AI model failed to retrieve information. Please try again.';
+        return newState;
     }
 }

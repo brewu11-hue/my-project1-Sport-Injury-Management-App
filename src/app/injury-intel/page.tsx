@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SearchState, searchInjuryInfo } from './actions';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -63,6 +63,7 @@ function InjuryInfoResult({ data }: { data: SearchState['data'] }) {
 function InjuryIntelContent() {
   const searchParams = useSearchParams();
   const injuryQuery = searchParams.get('injury');
+  const formRef = useRef<HTMLFormElement>(null);
 
   const initialState: SearchState = {
     data: null,
@@ -73,16 +74,16 @@ function InjuryIntelContent() {
 
   useEffect(() => {
     // When a query param is present, submit the form automatically on initial load.
-    // The user can then modify the search and resubmit manually.
-    if (injuryQuery && !state.data && !state.error && !isPending) {
-        const form = document.getElementById('injury-intel-form') as HTMLFormElement;
-        if (form) {
-            form.requestSubmit();
+    if (injuryQuery && formRef.current) {
+        // We only want this to run once on the initial load with a query param.
+        // The check for `state.input.injuryName` ensures it doesn't re-submit.
+        if (state.input.injuryName === injuryQuery && state.data === null && state.error === undefined && !isPending) {
+            formRef.current.requestSubmit();
         }
     }
-    // We only want this to run once when the query param is available.
+    // We only want this to run when the component mounts with a query param.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [injuryQuery]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -95,7 +96,7 @@ function InjuryIntelContent() {
         </CardHeader>
       </Card>
 
-      <form action={formAction} id="injury-intel-form">
+      <form action={formAction} ref={formRef}>
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
@@ -120,7 +121,7 @@ function InjuryIntelContent() {
         </Card>
       </form>
       
-      {isPending && !state.data && (
+      {isPending && (
         <Card>
             <CardContent className="pt-6 flex justify-center items-center">
                 <Loader2 className="mr-2 h-8 w-8 animate-spin" />
