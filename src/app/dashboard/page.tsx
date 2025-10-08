@@ -9,23 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 
 function DashboardContent() {
   const { injuries, loading } = useInjuryData();
-  
-  // Set the initially selected injury to the most recent one.
-  const mostRecentInjuryId = useMemo(() => {
-    if (injuries && injuries.length > 0) {
-      return injuries[0].id;
-    }
-    return null;
-  }, [injuries]);
-
   const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (mostRecentInjuryId && !selectedInjuryId) {
-      setSelectedInjuryId(mostRecentInjuryId);
-    }
-  }, [mostRecentInjuryId, selectedInjuryId]);
-
 
   const selectedInjury = useMemo(() => {
     if (!selectedInjuryId) return null;
