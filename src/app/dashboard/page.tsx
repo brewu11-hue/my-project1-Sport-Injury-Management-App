@@ -6,15 +6,15 @@ const DashboardClientPage = dynamic(
   {
     ssr: false,
     loading: () => (
-        <div className="grid gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-                <Skeleton className="h-[calc(100vh-10rem)] w-full" />
-            </div>
-            <div className="lg:col-span-3 grid auto-rows-max gap-6">
-                 <Skeleton className="h-[300px] w-full" />
-                 <Skeleton className="h-[300px] w-full" />
-            </div>
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-2">
+          <Skeleton className="h-[calc(100vh-10rem)] w-full" />
         </div>
+        <div className="lg:col-span-3 grid auto-rows-max gap-6">
+          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
+        </div>
+      </div>
     ),
   }
 );

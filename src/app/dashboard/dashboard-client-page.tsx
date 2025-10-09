@@ -4,7 +4,13 @@ import { useState, useMemo } from 'react';
 import { InjuryDataProvider, useInjuryData } from '@/hooks/use-injury-data';
 import InjuryList from '@/components/dashboard/injury-list';
 import InjuryDetails from '@/components/dashboard/injury-details';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from '@/components/ui/card';
 import RecoveryProgressChart from '@/components/dashboard/recovery-progress-chart';
 
 function DashboardContent() {
