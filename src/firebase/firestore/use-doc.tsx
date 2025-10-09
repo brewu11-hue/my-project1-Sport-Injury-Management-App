@@ -1,11 +1,10 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type {
   DocumentReference,
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
-  Timestamp,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { useUser } from '@/firebase';
@@ -16,7 +15,7 @@ interface UseDocOptions {
 
 // Function to recursively convert Timestamps to Dates
 const convertTimestampsToDates = (data: any): any => {
-    if (data instanceof Timestamp) {
+    if (data && typeof data.toDate === 'function') {
         return data.toDate();
     }
     if (Array.isArray(data)) {
@@ -43,8 +42,19 @@ function useDoc<T extends DocumentData>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client.
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Only run this logic on the client
+    if (!isClient) {
+        return;
+    }
+
     // Wait until user's auth state is confirmed
     if (userLoading) {
         setLoading(true);
@@ -80,7 +90,7 @@ function useDoc<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [ref, user, userLoading]);
+  }, [ref, user, userLoading, isClient]);
 
   return { data, loading, error };
 }

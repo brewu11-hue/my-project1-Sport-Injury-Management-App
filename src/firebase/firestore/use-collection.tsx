@@ -5,6 +5,7 @@ import type {
   DocumentData,
   FirestoreError,
   QuerySnapshot,
+  Timestamp,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { useUser } from '@/firebase';
@@ -15,9 +16,6 @@ interface UseCollectionOptions {
 
 // Function to recursively convert Timestamps to Dates
 const convertTimestampsToDates = (data: any): any => {
-    // Note: We check for a `toDate` function rather than `instanceof Timestamp`
-    // to avoid importing the Timestamp class on the client, which can cause
-    // server-side rendering issues in Next.js.
     if (data && typeof data.toDate === 'function') {
         return data.toDate();
     }
