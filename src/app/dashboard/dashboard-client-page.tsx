@@ -18,7 +18,7 @@ function DashboardContent() {
   const [selectedInjuryId, setSelectedInjuryId] = useState<string | null>(null);
 
   const selectedInjury = useMemo(() => {
-    // On initial load for a new user, automatically select the most recent injury once it's available.
+    // On initial load, automatically select the most recent injury once it's available.
     if (!selectedInjuryId && !loading && injuries.length > 0) {
       setSelectedInjuryId(injuries[0].id);
     }
