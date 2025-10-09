@@ -17,7 +17,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { signOut } from '@/firebase/auth/sign-out-client';
+import { signOut } from 'firebase/auth';
 import { Skeleton } from '../ui/skeleton';
 import { useEffect } from 'react';
 
@@ -56,10 +56,12 @@ const menuItems = [
 
 function UserMenu() {
   const { user, loading } = useUser();
+  const auth = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
+    if (!auth) return;
+    await signOut(auth);
     router.push('/login');
   };
 
@@ -123,8 +125,6 @@ export default function AppShell({ children }: AppShellProps) {
     return <>{children}</>;
   }
   
-  // The FirebaseClientProvider now renders null initially, so the loading spinner
-  // needs to be handled here, before we attempt to check for the user.
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen">
