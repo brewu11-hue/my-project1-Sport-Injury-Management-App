@@ -1,7 +1,11 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { signInWithGoogle } from '@/firebase/auth/sign-in';
+import {
+  GoogleAuthProvider,
+  signInWithRedirect,
+} from 'firebase/auth';
+import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardFooter } from '@/components/ui/card';
 
@@ -37,16 +41,27 @@ function GoogleIcon() {
 export default function AuthForm() {
     const searchParams = useSearchParams();
     const next = searchParams.get('next') ?? '/dashboard';
+    const auth = useAuth();
   
     const handleGoogleSignIn = async () => {
-      // This is now a client-side function
-      await signInWithGoogle(next);
-    };
+        if (!auth) {
+            console.error("Auth service is not available.");
+            return;
+        }
+        const provider = new GoogleAuthProvider();
+      
+        // Store the redirect URL in session storage to be retrieved after sign-in
+        if (next) {
+          sessionStorage.setItem('firebase-redirect-url', next);
+        }
+      
+        await signInWithRedirect(auth, provider);
+      };
   
     return (
       <>
         <CardContent>
-            <Button onClick={handleGoogleSignIn} className="w-full">
+            <Button onClick={handleGoogleSignIn} className="w-full" disabled={!auth}>
                 <GoogleIcon />
                 Sign in with Google
             </Button>
