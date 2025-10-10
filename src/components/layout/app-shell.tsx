@@ -125,17 +125,17 @@ export default function AppShell({ children }: AppShellProps) {
     return <>{children}</>;
   }
   
-  // if (loading) {
-  //   return (
-  //       <div className="flex items-center justify-center h-screen">
-  //           <Dumbbell className="h-12 w-12 animate-spin text-primary" />
-  //       </div>
-  //   );
-  // }
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <Dumbbell className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
 
-  // if (!user) {
-  //   redirect('/login');
-  // }
+  if (!user) {
+    redirect('/login');
+  }
 
   return (
     <SidebarProvider>
