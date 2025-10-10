@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useProfileData } from '@/hooks/use-profile-data';
 
 type AppShellProps = {
   children: ReactNode;
@@ -82,6 +84,9 @@ function NavMenu({
 }
 
 function UserMenu() {
+    const { profile } = useProfileData();
+    const fallback = profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : <User />;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -92,17 +97,17 @@ function UserMenu() {
         >
           <Avatar>
             <AvatarImage
-              src="https://picsum.photos/seed/1/100/100"
-              alt="User avatar"
+              src={profile?.photoURL}
+              alt={profile?.displayName || "User avatar"}
             />
             <AvatarFallback>
-              <User />
+              {fallback}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{profile?.displayName || 'My Account'}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/settings">Settings</Link>

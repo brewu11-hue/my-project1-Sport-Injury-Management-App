@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import AppShell from '@/components/layout/app-shell';
 import FirebaseClientProvider from '@/firebase/client-provider';
+import { ProfileProvider } from '@/hooks/use-profile-data';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -26,7 +27,9 @@ export default function RootLayout({
       <head />
       <body className="font-body antialiased h-full bg-background">
         <FirebaseClientProvider>
-          <AppShell>{children}</AppShell>
+          <ProfileProvider>
+            <AppShell>{children}</AppShell>
+          </ProfileProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>
