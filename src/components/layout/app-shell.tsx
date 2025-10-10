@@ -3,16 +3,20 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Menu } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ClientOnly } from '../utility/client-only';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 type AppShellProps = {
   children: ReactNode;
@@ -37,24 +41,32 @@ const menuItems = [
   },
 ];
 
-function NavMenu({ isMobile = false }: { isMobile?: boolean }) {
+function NavMenu({
+  isMobile = false,
+  onLinkClick,
+}: {
+  isMobile?: boolean;
+  onLinkClick?: () => void;
+}) {
   const pathname = usePathname();
   const Comp = isMobile ? 'div' : 'nav';
   return (
     <Comp
       className={cn(
         'flex items-center gap-4 text-sm font-medium text-muted-foreground',
-        isMobile && 'flex-col items-start gap-2'
+        isMobile && 'flex-col items-start gap-2',
+        !isMobile && 'gap-6'
       )}
     >
       {menuItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
+          onClick={onLinkClick}
           className={cn(
             'transition-colors hover:text-foreground',
             pathname.startsWith(item.href) && 'text-foreground',
-            isMobile && 'text-lg font-semibold'
+            isMobile && 'text-lg font-semibold w-full'
           )}
         >
           {item.label}
@@ -64,24 +76,57 @@ function NavMenu({ isMobile = false }: { isMobile?: boolean }) {
   );
 }
 
+function UserMenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="overflow-hidden rounded-full"
+        >
+          <Avatar>
+            <AvatarImage
+              src="https://picsum.photos/seed/1/100/100"
+              alt="User avatar"
+            />
+            <AvatarFallback>
+              <User />
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings">Settings</Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Logout</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default function AppShell({ children }: AppShellProps) {
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <Link
+        <div className="flex items-center gap-2">
+           <Link
             href="/dashboard"
-            className="flex items-center gap-2 text-lg font-semibold md:text-base"
+            className="flex items-center gap-2 text-lg font-semibold"
           >
             <Dumbbell className="h-6 w-6 text-primary" />
-            <span className="sr-only">Injury Insights</span>
+            <span className="font-bold">Injury Insights</span>
           </Link>
-          <NavMenu />
-        </nav>
+        </div>
+        
         <ClientOnly>
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
@@ -92,24 +137,29 @@ export default function AppShell({ children }: AppShellProps) {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2 text-lg font-semibold"
-                >
-                  <Dumbbell className="h-6 w-6 text-primary" />
-                  <span className="sr-only">Injury Insights</span>
-                </Link>
-                <NavMenu isMobile={true}/>
-              </nav>
+            <SheetContent side="left" className="flex flex-col">
+               <nav className="grid gap-2 text-lg font-medium">
+                  <Link
+                    href="#"
+                    className="flex items-center gap-2 text-lg font-semibold mb-4"
+                  >
+                    <Dumbbell className="h-6 w-6 text-primary" />
+                    <span>Injury Insights</span>
+                  </Link>
+                  <NavMenu isMobile={true} onLinkClick={() => setIsSheetOpen(false)}/>
+                </nav>
             </SheetContent>
           </Sheet>
         </ClientOnly>
+
+        <nav className="hidden flex-col text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6 ml-6">
+          <NavMenu />
+        </nav>
+
         <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-             <h1 className="text-lg font-semibold tracking-tight text-foreground">
-              Injury Insights
-            </h1>
+           <ClientOnly>
+            <UserMenu />
+          </ClientOnly>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
