@@ -11,14 +11,11 @@ import type { FirebaseApp } from 'firebase/app';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
-import type { Auth } from 'firebase/auth';
-import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 type FirebaseContextValue = {
   app: FirebaseApp;
   firestore: Firestore;
-  auth: Auth;
 } | null;
 
 const FirebaseContext = createContext<FirebaseContextValue>(null);
@@ -33,9 +30,8 @@ export default function FirebaseClientProvider({
   useEffect(() => {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const firestore = getFirestore(app);
-    const auth = getAuth(app);
     
-    setServices({ app, firestore, auth });
+    setServices({ app, firestore });
   }, []);
 
   return (
@@ -51,10 +47,6 @@ export const useFirebaseApp = () => useContext(FirebaseContext)?.app;
 
 export const useFirestore = () => {
   return useContext(FirebaseContext)?.firestore;
-};
-
-export const useAuth = () => {
-  return useContext(FirebaseContext)?.auth;
 };
 
 export function initializeFirebase(): { app: FirebaseApp } {

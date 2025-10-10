@@ -3,12 +3,13 @@ import FirebaseClientProvider, {
     useFirebase,
     useFirebaseApp,
     useFirestore,
-    useAuth,
 } from '@/firebase/client-provider';
 
-import { useUser } from '@/firebase/auth/use-user';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
+
+// A mock user object for development without authentication
+const useUser = () => ({ user: { uid: 'dev-user' }, loading: false });
 
 export {
     initializeFirebase,
@@ -16,7 +17,6 @@ export {
     useFirebase,
     useFirebaseApp,
     useFirestore,
-    useAuth,
     useUser,
     useCollection,
     useDoc,
