@@ -10,7 +10,11 @@ import RiskAssessmentResult from '@/components/risk-assessment/risk-assessment-r
 export default function RiskAssessmentPage() {
   const initialState: RiskAssessmentState = {
     data: null,
-    input: { athleteProfile: '', trainingLoad: '', pastInjuries: '' },
+    input: { 
+      athleteProfile: '20 year old rugby player', 
+      trainingLoad: 'I do crossfit 3 days a week and weight session 2 times a week', 
+      pastInjuries: 'shoulder separation when i was 18 and fractured when i was 20' 
+    },
   };
 
   const [state, formAction, isPending] = useActionState(runInjuryRiskAssessment, initialState);
