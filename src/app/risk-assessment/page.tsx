@@ -1,17 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import type { AssessInjuryRiskOutput } from '@/ai/flows/assess-injury-risk';
+import { useActionState } from 'react';
 import type { RiskAssessmentState } from './actions';
+import { runInjuryRiskAssessment } from './actions';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import RiskAssessmentForm from '@/components/risk-assessment/risk-assessment-form';
 import RiskAssessmentResult from '@/components/risk-assessment/risk-assessment-result';
 
 export default function RiskAssessmentPage() {
-  const [assessmentResult, setAssessmentResult] = useState<RiskAssessmentState | null>(null);
+  const initialState: RiskAssessmentState = {
+    data: null,
+    input: { athleteProfile: '', trainingLoad: '', pastInjuries: '' },
+  };
+
+  const [state, formAction, isPending] = useActionState(runInjuryRiskAssessment, initialState);
 
   const handleReset = () => {
-    setAssessmentResult(null);
+    // This is a bit of a trick to reset the form state.
+    // A more robust solution might involve a key on the form component.
+    window.location.reload();
   };
 
   return (
@@ -25,12 +32,16 @@ export default function RiskAssessmentPage() {
         </CardHeader>
       </Card>
 
-      {!assessmentResult?.data ? (
-        <RiskAssessmentForm setAssessmentResult={setAssessmentResult} />
+      {!state.data ? (
+        <RiskAssessmentForm
+          formAction={formAction}
+          isPending={isPending}
+          initialState={state}
+        />
       ) : (
         <RiskAssessmentResult
-          result={assessmentResult.data}
-          athleteProfile={assessmentResult.input.athleteProfile}
+          result={state.data}
+          athleteProfile={state.input.athleteProfile}
           onReset={handleReset}
         />
       )}

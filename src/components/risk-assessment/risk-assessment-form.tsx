@@ -1,8 +1,7 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
-import { runInjuryRiskAssessment, RiskAssessmentState } from '@/app/risk-assessment/actions';
+import type { RiskAssessmentState } from '@/app/risk-assessment/actions';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,23 +26,13 @@ function SubmitButton() {
 }
 
 type RiskAssessmentFormProps = {
-    setAssessmentResult: (result: RiskAssessmentState) => void;
+    formAction: (payload: FormData) => void;
+    isPending: boolean;
+    initialState: RiskAssessmentState;
 }
 
-export default function RiskAssessmentForm({ setAssessmentResult }: RiskAssessmentFormProps) {
-  const initialState: RiskAssessmentState = {
-    data: null,
-    input: { athleteProfile: '', trainingLoad: '', pastInjuries: '' },
-  };
-  const [state, formAction] = useActionState(runInjuryRiskAssessment, initialState);
+export default function RiskAssessmentForm({ formAction, isPending, initialState }: RiskAssessmentFormProps) {
   
-  useEffect(() => {
-    if(state.data || state.error) {
-        setAssessmentResult(state);
-    }
-  }, [state, setAssessmentResult]);
-
-
   return (
     <form action={formAction}>
       <Card>
@@ -55,7 +44,7 @@ export default function RiskAssessmentForm({ setAssessmentResult }: RiskAssessme
               name="athleteProfile"
               placeholder="e.g., 25-year-old male, competitive marathon runner, 5 years of experience."
               rows={3}
-              defaultValue={state.input.athleteProfile}
+              defaultValue={initialState.input.athleteProfile}
             />
           </div>
           <div className="space-y-2">
@@ -65,7 +54,7 @@ export default function RiskAssessmentForm({ setAssessmentResult }: RiskAssessme
               name="trainingLoad"
               placeholder="e.g., Running 50 miles/week, including 2 interval sessions and 1 long run. 2 strength training sessions per week."
               rows={4}
-              defaultValue={state.input.trainingLoad}
+              defaultValue={initialState.input.trainingLoad}
             />
           </div>
           <div className="space-y-2">
@@ -75,13 +64,13 @@ export default function RiskAssessmentForm({ setAssessmentResult }: RiskAssessme
               name="pastInjuries"
               placeholder="e.g., History of shin splints 2 years ago, fully recovered. Mild patellar tendonitis in right knee last year."
               rows={3}
-              defaultValue={state.input.pastInjuries}
+              defaultValue={initialState.input.pastInjuries}
             />
           </div>
-          {state.error && (
+          {initialState.error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{state.error}</AlertDescription>
+              <AlertDescription>{initialState.error}</AlertDescription>
             </Alert>
           )}
         </CardContent>
