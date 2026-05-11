@@ -1,4 +1,4 @@
-Link to app: https://my-project1-sport-injury-management-app-7u7j
+Link to app: https://my-project1-sport-injury-manag-git-a1e2ba-brewu11-hues-projects.vercel.app
 
 This is a NextJS starter in Firebase Studio.
 Sport Injury & Management App
